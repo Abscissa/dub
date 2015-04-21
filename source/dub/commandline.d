@@ -13,6 +13,7 @@ import dub.dub;
 import dub.generators.generator;
 import dub.internal.vibecompat.core.file;
 import dub.internal.vibecompat.core.log;
+import dub.internal.vibecompat.data.json;
 import dub.internal.vibecompat.inet.url;
 import dub.package_;
 import dub.packagemanager;
@@ -776,7 +777,11 @@ class DescribeCommand : PackageBuildCommand {
 
 		m_defaultConfig = dub.project.getDefaultConfiguration(m_buildPlatform);
 
-		dub.describeProject(m_buildPlatform, m_buildConfig.length ? m_buildConfig : m_defaultConfig);
+		auto config = m_buildConfig.length ? m_buildConfig : m_defaultConfig;
+
+		auto desc = dub.project.describe(m_buildPlatform, config);
+		writeln(desc.serializeToPrettyJson());
+
 		return 0;
 	}
 }
