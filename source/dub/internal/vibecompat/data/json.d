@@ -97,6 +97,7 @@ struct Json {
 		version (VibeJsonFieldNames) {
 			uint m_magic = 0x1337f00d; // works around Appender bug (DMD BUG 10690/10859/11357)
 			string m_name;
+			string m_fileName;
 		}
 	}
 
@@ -435,7 +436,7 @@ struct Json {
 		else static if (is(T == float)) return cast(T)m_float;
 		else static if (is(T == long)) return m_int;
 		else static if (is(T == ulong)) return cast(ulong)m_int;
-		else static if (is(T : long)){ enforceJson(m_int <= T.max && m_int >= T.min, "Integer conversion out of bounds error"); return cast(T)m_int; }
+		else static if (is(T : long)){ enforceJson(m_int <= T.max && m_int >= T.min, "Integer conversion out of bounds error", m_fileName, line); return cast(T)m_int; }
 		else static if (is(T == string)) return m_string;
 		else static if (is(T == Json[])) return m_array;
 		else static if (is(T == Json[string])) return m_object;
@@ -872,8 +873,8 @@ struct Json {
 			}
 		}
 
-		enforceJson(op.length > 0, format("Got %s, expected %s.", name, expected), null, line);
-		enforceJson(false, format("Got %s, expected %s for %s.", name, expected, op), null, line);
+		enforceJson(op.length > 0, format("Got %s, expected %s.", name, expected), m_fileName, line);
+		enforceJson(false, format("Got %s, expected %s for %s.", name, expected, op), m_fileName, line);
 	}
 
 	/*invariant()
@@ -983,6 +984,7 @@ Json parseJson(R)(ref R range, int* line = null, string filename = null)
 
 	assert(ret.type != Json.Type.undefined);
 	version(JsonLineNumbers) ret.line = curline;
+	ret.m_fileName = filename;
 	return ret;
 }
 
