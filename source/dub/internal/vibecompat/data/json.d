@@ -16,6 +16,9 @@ else:
 
 import dub.internal.vibecompat.data.utils;
 
+version = VibeJsonFieldNames;
+version = JsonLineNumbers;
+
 ///
 unittest {
 	import vibe.core.log : logInfo;
@@ -869,8 +872,8 @@ struct Json {
 			}
 		}
 
-		if (!op.length) throw new JSONException(format("Got %s, expected %s.", name, expected));
-		else throw new JSONException(format("Got %s, expected %s for %s.", name, expected, op));
+		enforceJson(op.length > 0, format("Got %s, expected %s.", name, expected), null, line);
+		enforceJson(false, format("Got %s, expected %s for %s.", name, expected, op), null, line);
 	}
 
 	/*invariant()
@@ -901,7 +904,7 @@ Json parseJson(R)(ref R range, int* line = null, string filename = null)
 	skipWhitespace(range, line);
 
 	version(JsonLineNumbers) {
-		import vibe.core.log;
+		import dub.internal.vibecompat.core.log;
 		int curline = line ? *line : 0;
 	}
 
