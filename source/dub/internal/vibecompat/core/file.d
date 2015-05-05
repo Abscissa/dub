@@ -151,7 +151,8 @@ void hardLinkFile(Path from, Path to, bool overwrite = false)
 {
 	if (existsFile(to)) {
 		enforce(overwrite, "Destination file already exists.");
-		if (auto fe = collectException!FileException(removeFile(to))) {
+		try removeFile(to);
+		catch (FileException fe) {
 			version (Windows) if (sameFile(from, to)) return;
 			throw fe;
 		}
