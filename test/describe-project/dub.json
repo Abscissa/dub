@@ -1,11 +1,22 @@
 {
     "name": "describe-project",
-    "targetType": "sourceLibrary",
+    "targetType": "executable",
     "description": "A test describe project",
     "authors": ["nobody"],
     "homepage": "fake.com",
     "license": "BSD 2-clause",
     "copyright": "Copyright © 2015, nobody",
+    "mainSourceFile": "src/dummy.d",
+    "dflags": ["--some-dflag"],
+    "lflags": ["--some-lflag"],
+    "libs": ["ssl"],
+    "copyFiles": ["data/dummy.dat"],
+    "versions": ["someVerIdent"],
+    "debugVersions": ["someDebugVerIdent"],
+    "preGenerateCommands": ["./do-preGenerateCommands"],
+    "postGenerateCommands": ["./do-postGenerateCommands"],
+    "preBuildCommands": ["./do-preBuildCommands"],
+    "postBuildCommands": ["./do-postBuildCommands"],
     "dependencies": {
         "describe-dependency-1": {
             "version": "1.0",
@@ -16,12 +27,12 @@
             "path": "../describe-dependency-2"
         }
     },
-	"configurations": [
-		{
-			"name": "my-project-config"
-		}
-	],
-	"subConfigurations": {
-		"describe-dependency-1": "my-dependency-1-config"
-	},
+    "configurations": [
+        {
+            "name": "my-project-config"
+        }
+    ],
+    "subConfigurations": {
+        "describe-dependency-1": "my-dependency-1-config"
+    },
 }
