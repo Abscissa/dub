@@ -635,7 +635,8 @@ class Project {
 				.map!(importPath => buildPath(pack.path.toString(), importPath))
 				.map!(path => path.endsWith(dirSeparator) ? path : path ~ dirSeparator);
 			}
-			else static if(attributeName == "sourceFiles" || attributeName == "importFiles" || attributeName == "stringImportFiles")
+			else static if(attributeName == "sourceFiles" || attributeName == "importFiles" ||
+				attributeName == "stringImportFiles" || attributeName == "copyFiles")
 			{
 				// Return full paths.
 				return values
