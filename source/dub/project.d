@@ -618,58 +618,80 @@ class Project {
 	private string[] listBuildSetting(string attributeName)(BuildPlatform platform, string[string] configs, bool recursive=true)
 	{
 		import std.path : buildPath, dirSeparator;
-		import std.traits : isArray;
+		import std.range : only;
 
 		string[] list;
 
-		auto getPackageBuildSetting(Package pack) {
-			auto values = __traits(getMember, pack.getBuildSettings(platform, configs[pack.name]), attributeName);
-
-			//TODO: This needs redesigned to cleanly separate "handle the various
-			//      data types from BuildSettings" from "fixup the paths"
-			static if(attributeName == "importPaths" || attributeName == "stringImportPaths")
+		// Return any BuildSetting member attributeName as a range of strings. Don't attempt to fixup values.
+		// allowEmptyString: When the value is a string (as opposed to string[]),
+		//                   is empty string an actual permitted value instead of
+		//                   a missing value?
+		auto getRawBuildSetting(Package pack, bool allowEmptyString) {
+			auto value = __traits(getMember, pack.getBuildSettings(platform, configs[pack.name]), attributeName);
+			
+			static if( is(typeof(value) == string[]) )
+				return value;
+			else static if( is(typeof(value) == string) )
 			{
-				// Return full paths for the import paths, making sure a
-				// directory separator is on the end of each path.
-				return values
-				.map!(importPath => buildPath(pack.path.toString(), importPath))
-				.map!(path => path.endsWith(dirSeparator) ? path : path ~ dirSeparator);
+				auto ret = only(value);
+
+				// only() has a different return type from only(value), so we
+				// have to empty the range rather than just returning only().
+				if(value.empty && !allowEmptyString) {
+					ret.popFront();
+					assert(ret.empty);
+				}
+
+				return ret;
 			}
-			else static if(attributeName == "sourceFiles" || attributeName == "importFiles" ||
-				attributeName == "stringImportFiles" || attributeName == "copyFiles")
+			else
+				static assert(false, "Type of BuildSettings."~attributeName~" is unsupported.");
+		}
+		
+		// Adjust BuildSetting member attributeName as needed.
+		// Returns a range of strings.
+		auto getFixedBuildSetting(Package pack) {
+			// Is relative path(s) to a directory?
+			enum isRelativeDirectory =
+				attributeName == "importPaths" || attributeName == "stringImportPaths" ||
+				attributeName == "targetPath" || attributeName == "workingDirectory";
+
+			// Is relative path(s) to a file?
+			enum isRelativeFile =
+				attributeName == "sourceFiles" || attributeName == "importFiles" ||
+				attributeName == "stringImportFiles" || attributeName == "copyFiles" ||
+				attributeName == "mainSourceFile";
+			
+			// For these, empty string means "main project directory", not "missing value"
+			enum allowEmptyString =
+				attributeName == "targetPath" || attributeName == "workingDirectory";
+			
+			auto values = getRawBuildSetting(pack, allowEmptyString);
+			auto fixRelativePath = (string importPath) => buildPath(pack.path.toString(), importPath);
+			auto ensureTrailingSlash = (string path) => path.endsWith(dirSeparator) ? path : path ~ dirSeparator;
+
+			static if(isRelativeDirectory)
+			{
+				// Return full paths for the paths, making sure a
+				// directory separator is on the end of each path.
+				return values.map!(fixRelativePath).map!(ensureTrailingSlash);
+			}
+			else static if(isRelativeFile)
 			{
 				// Return full paths.
-				return values
-				.map!(importPath => buildPath(pack.path.toString(), importPath));
+				return values.map!(fixRelativePath);
 			}
-			else static if(attributeName == "targetPath" || attributeName == "workingDirectory")
-			{
-				// Return full path, making sure a
-				// directory separator is on the end of each path.
-				auto path = buildPath(pack.path.toString(), values);
-				return [path.endsWith(dirSeparator) ? path : path ~ dirSeparator];
-			}
-			else static if(attributeName == "mainSourceFile")
-			{
-				if(values.empty)
-					return null;
-				
-				// Return full path.
-				return [ buildPath(pack.path.toString(), values) ];
-			}
-			else static if( is(typeof(values) == string[]) )  // Is a string[]?
-				return values;
 			else
-				return values.empty? null : [values];
+				return values;
 		}
 
-		foreach(value; getPackageBuildSetting(m_rootPackage)) {
+		foreach(value; getFixedBuildSetting(m_rootPackage)) {
 			list ~= value;
 		}
 
 		if(recursive) {
 			foreach(dep; m_dependencies) {
-				foreach(value; getPackageBuildSetting(dep)) {
+				foreach(value; getFixedBuildSetting(dep)) {
 					list ~= value;
 				}
 			}
