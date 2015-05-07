@@ -644,6 +644,8 @@ class Project {
 
 				return ret;
 			}
+			else static if( is(typeof(value) == enum) )
+				return only(value);
 			else
 				static assert(false, "Type of BuildSettings."~attributeName~" is unsupported.");
 		}
@@ -666,6 +668,10 @@ class Project {
 			enum allowEmptyString =
 				attributeName == "targetPath" || attributeName == "workingDirectory";
 			
+			enum isEnumBitfield =
+				attributeName == "targetType" || attributeName == "requirements" ||
+				attributeName == "options";
+			
 			auto values = getRawBuildSetting(pack, allowEmptyString);
 			auto fixRelativePath = (string importPath) => buildPath(pack.path.toString(), importPath);
 			auto ensureTrailingSlash = (string path) => path.endsWith(dirSeparator) ? path : path ~ dirSeparator;
@@ -681,6 +687,8 @@ class Project {
 				// Return full paths.
 				return values.map!(fixRelativePath);
 			}
+			else static if(isEnumBitfield)
+				return bitFieldNames(values.front);
 			else
 				return values;
 		}
@@ -711,6 +719,7 @@ class Project {
 		bool recursive = requestedDataParts[0] == "recursive";
 		switch(requestedDataParts[2])
 		{
+		case "target-type":            return listBuildSetting!"targetType"(platform, configs, recursive);
 		case "target-path":            return listBuildSetting!"targetPath"(platform, configs, recursive);
 		case "target-name":            return listBuildSetting!"targetName"(platform, configs, recursive);
 		case "working-directory":      return listBuildSetting!"workingDirectory"(platform, configs, recursive);
@@ -730,6 +739,8 @@ class Project {
 		case "post-generate-commands": return listBuildSetting!"postGenerateCommands"(platform, configs, recursive);
 		case "pre-build-commands":     return listBuildSetting!"preBuildCommands"(platform, configs, recursive);
 		case "post-build-commands":    return listBuildSetting!"postBuildCommands"(platform, configs, recursive);
+		case "requirements":           return listBuildSetting!"requirements"(platform, configs, recursive);
+		case "options":                return listBuildSetting!"options"(platform, configs, recursive);
 
 		default:
 			enforce(false, "'"~requestedData~

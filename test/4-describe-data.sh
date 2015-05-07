@@ -13,6 +13,7 @@ function cleanup {
 trap cleanup EXIT
 
 if ! $DUB describe --compiler=$COMPILER \
+    --data=package-target-type --data=recursive-target-type \
     --data=package-target-path --data=recursive-target-path \
     --data=package-target-name --data=recursive-target-name \
     --data=package-working-directory --data=recursive-working-directory \
@@ -32,6 +33,8 @@ if ! $DUB describe --compiler=$COMPILER \
     --data=package-post-generate-commands --data=recursive-post-generate-commands \
     --data=package-pre-build-commands --data=recursive-pre-build-commands \
     --data=package-post-build-commands --data=recursive-post-build-commands \
+    --data=package-requirements --data=recursive-requirements \
+    --data=package-options --data=recursive-options \
     > "$temp_file"; then
     die 'Printing project data failed!'
 fi
@@ -41,8 +44,15 @@ cp "$temp_file" "$CURR_DIR/actual-output"
 
 # Create the expected output path file to compare against.
 expected_file="$CURR_DIR/expected-describe-data-output"
+# --data=*-target-type
+echo "executable" > "$expected_file"
+echo >> "$expected_file"
+echo "executable" >> "$expected_file"
+echo "sourceLibrary" >> "$expected_file"
+echo "sourceLibrary" >> "$expected_file"
+echo >> "$expected_file"
 # --data=*-target-path
-echo "$CURR_DIR/describe-project/" > "$expected_file"
+echo "$CURR_DIR/describe-project/" >> "$expected_file"
 echo >> "$expected_file"
 echo "$CURR_DIR/describe-project/" >> "$expected_file"
 echo "$CURR_DIR/describe-dependency-1/" >> "$expected_file"
@@ -155,6 +165,22 @@ echo "./do-postBuildCommands" >> "$expected_file"
 echo >> "$expected_file"
 echo "./do-postBuildCommands" >> "$expected_file"
 echo "./dependency-postBuildCommands" >> "$expected_file"
+echo >> "$expected_file"
+# --data=*-requirements
+echo "disallowInlining" >> "$expected_file"
+echo >> "$expected_file"
+echo "disallowInlining" >> "$expected_file"
+echo "requireContracts" >> "$expected_file"
+echo "none" >> "$expected_file"
+echo >> "$expected_file"
+# --data=*-options
+echo "releaseMode" >> "$expected_file"
+echo "debugInfo" >> "$expected_file"
+echo >> "$expected_file"
+echo "releaseMode" >> "$expected_file"
+echo "debugInfo" >> "$expected_file"
+echo "stackStomping" >> "$expected_file"
+echo "none" >> "$expected_file"
 
 if ! diff "$expected_file" "$temp_file"; then
     die 'The project data did not match the expected output!'

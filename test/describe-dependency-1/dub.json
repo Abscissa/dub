@@ -16,6 +16,8 @@
     "postGenerateCommands": ["./dependency-postGenerateCommands"],
     "preBuildCommands": ["./dependency-preBuildCommands"],
     "postBuildCommands": ["./dependency-postBuildCommands"],
+    "buildRequirements": ["requireContracts"],
+    "buildOptions": ["stackStomping"],
     "configurations": [
         {
             "name": "my-dependency-1-config"

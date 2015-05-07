@@ -775,6 +775,7 @@ class DescribeCommand : PackageBuildCommand {
 			"the same order requested on the command line.",
 			"",
 			"The accepted values for --data=VALUE are:",
+			"package-target-type, recursive-target-type",
 			"package-target-path, recursive-target-path",
 			"package-target-name, recursive-target-name",
 			"package-working-directory, recursive-working-directory",
@@ -794,6 +795,8 @@ class DescribeCommand : PackageBuildCommand {
 			"package-post-generate-commands, recursive-post-generate-commands",
 			"package-pre-build-commands, recursive-pre-build-commands",
 			"package-post-build-commands, recursive-post-build-commands",
+			"package-requirements, recursive-requirements",
+			"package-options, recursive-options",
 		];
 	}
 
