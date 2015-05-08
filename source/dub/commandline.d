@@ -765,38 +765,21 @@ class DescribeCommand : PackageBuildCommand {
 			"All usual options that are also used for build/run/generate apply.",
 			"",
 			"When --data=VALUE is supplied, specific build settings for a project ",
-			"will be printed instead (by default, line-by-line). The VALUE must "
-			`be prefixed with either "recursive-" or "package-" to indicate `
-			`whether to include dependencies ("recursive-") or just this `
-			`package alone ("package-").`,
+			"will be printed instead (by default, line-by-line).",
 			"",
 			"The --data=VALUE option can be specified multiple times to retrieve "
 			"several pieces of information at once. The data will be output in "
 			"the same order requested on the command line.",
 			"",
 			"The accepted values for --data=VALUE are:",
-			"package-target-type, recursive-target-type",
-			"package-target-path, recursive-target-path",
-			"package-target-name, recursive-target-name",
-			"package-working-directory, recursive-working-directory",
-			"package-main-source-file, recursive-main-source-file",
-			"package-dflags, recursive-dflags",
-			"package-lflags, recursive-lflags",
-			"package-libs, recursive-libs",
-			"package-source-files, recursive-source-files",
-			"package-copy-files, recursive-copy-files",
-			"package-versions, recursive-versions",
-			"package-debug-versions, recursive-debug-versions",
-			"package-import-paths, recursive-import-paths",
-			"package-string-import-paths, recursive-string-import-paths",
-			"package-import-files, recursive-import-files",
-			"package-string-import-files, recursive-string-import-files",
-			"package-pre-generate-commands, recursive-pre-generate-commands",
-			"package-post-generate-commands, recursive-post-generate-commands",
-			"package-pre-build-commands, recursive-pre-build-commands",
-			"package-post-build-commands, recursive-post-build-commands",
-			"package-requirements, recursive-requirements",
-			"package-options, recursive-options",
+			"",
+			"target-type, target-path, target-name, working-directory, "
+			"main-source-file, dflags, lflags, libs, source-files, "
+			"copy-files, versions, debug-versions, import-paths, "
+			"string-import-paths, import-files, string-import-files, "
+			"pre-generate-commands, post-generate-commands, "
+			"pre-build-commands, post-build-commands, "
+			"requirements, options",
 		];
 	}
 
@@ -805,11 +788,11 @@ class DescribeCommand : PackageBuildCommand {
 		super.prepare(args);
 
 		args.getopt("import-paths", &m_importPaths, [
-			"Shortcut for --data=recursive-import-paths"
+			"Shortcut for --data=import-paths"
 		]);
 
 		args.getopt("string-import-paths", &m_stringImportPaths, [
-			"Shortcut for --data=recursive-string-import-paths"
+			"Shortcut for --data=string-import-paths"
 		]);
 
 		args.getopt("data", &m_data, [
@@ -846,11 +829,11 @@ class DescribeCommand : PackageBuildCommand {
 		auto config = m_buildConfig.length ? m_buildConfig : m_defaultConfig;
 
 		if (m_importPaths) {
-			dub.listImportPaths(m_buildPlatform, config);
+			dub.listImportPaths(m_buildPlatform, config, m_buildSettings);
 		} else if (m_stringImportPaths) {
-			dub.listStringImportPaths(m_buildPlatform, config);
+			dub.listStringImportPaths(m_buildPlatform, config, m_buildSettings);
 		} else if (m_data) {
-			dub.listProjectData(m_buildPlatform, config, m_data);
+			dub.listProjectData(m_buildPlatform, config, m_buildSettings, m_data);
 		} else {
 			auto desc = dub.project.describe(m_buildPlatform, config, m_buildType);
 			writeln(desc.serializeToPrettyJson());

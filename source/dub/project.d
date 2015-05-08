@@ -609,13 +609,12 @@ class Project {
 			dst[key] = value;
 	}
 
-	// recursive: Should settings from dependencies be included?
-	private string[] listBuildSetting(string attributeName)(BuildPlatform platform, string config, bool recursive=true)
+	private string[] listBuildSetting(string attributeName)(BuildPlatform platform, string config, BuildSettings buildSettings)
 	{
-		return listBuildSetting!attributeName(platform, getPackageConfigs(platform, config), recursive);
+		return listBuildSetting!attributeName(platform, getPackageConfigs(platform, config), buildSettings);
 	}
 	
-	private string[] listBuildSetting(string attributeName)(BuildPlatform platform, string[string] configs, bool recursive=true)
+	private string[] listBuildSetting(string attributeName)(BuildPlatform platform, string[string] configs, BuildSettings buildSettings)
 	{
 		import std.path : buildPath, dirSeparator;
 		import std.range : only;
@@ -627,7 +626,7 @@ class Project {
 		//                   is empty string an actual permitted value instead of
 		//                   a missing value?
 		auto getRawBuildSetting(Package pack, bool allowEmptyString) {
-			auto value = __traits(getMember, pack.getBuildSettings(platform, configs[pack.name]), attributeName);
+			auto value = __traits(getMember, buildSettings, attributeName);
 			
 			static if( is(typeof(value) == string[]) )
 				return value;
@@ -676,14 +675,12 @@ class Project {
 			auto fixRelativePath = (string importPath) => buildPath(pack.path.toString(), importPath);
 			auto ensureTrailingSlash = (string path) => path.endsWith(dirSeparator) ? path : path ~ dirSeparator;
 
-			static if(isRelativeDirectory)
-			{
+			static if(isRelativeDirectory) {
 				// Return full paths for the paths, making sure a
 				// directory separator is on the end of each path.
 				return values.map!(fixRelativePath).map!(ensureTrailingSlash);
 			}
-			else static if(isRelativeFile)
-			{
+			else static if(isRelativeFile) {
 				// Return full paths.
 				return values.map!(fixRelativePath);
 			}
@@ -697,80 +694,68 @@ class Project {
 			list ~= value;
 		}
 
-		if(recursive) {
-			foreach(dep; m_dependencies) {
-				foreach(value; getFixedBuildSetting(dep)) {
-					list ~= value;
-				}
-			}
-		}
-
 		return list;
 	}
 
-	// requestedData is of the form "package-(attr-name)" or "recursive-(attr-name)",
-	// for example: "package-main-source-file" or "recursive-import-paths"
-	private string[] listBuildSetting(BuildPlatform platform, string[string] configs, string requestedData)
+	private string[] listBuildSetting(BuildPlatform platform, string[string] configs, BuildSettings buildSettings, string requestedData)
 	{
-		auto requestedDataParts = requestedData.findSplit("-");
-		enforce(requestedDataParts[0] == "package" || requestedDataParts[0] == "recursive",
-			"The name of requested data, '"~requestedData~"', doesn't begin with 'package-' or 'recursive-' as required.");
-
-		bool recursive = requestedDataParts[0] == "recursive";
-		switch(requestedDataParts[2])
+		switch(requestedData)
 		{
-		case "target-type":            return listBuildSetting!"targetType"(platform, configs, recursive);
-		case "target-path":            return listBuildSetting!"targetPath"(platform, configs, recursive);
-		case "target-name":            return listBuildSetting!"targetName"(platform, configs, recursive);
-		case "working-directory":      return listBuildSetting!"workingDirectory"(platform, configs, recursive);
-		case "main-source-file":       return listBuildSetting!"mainSourceFile"(platform, configs, recursive);
-		case "dflags":                 return listBuildSetting!"dflags"(platform, configs, recursive);
-		case "lflags":                 return listBuildSetting!"lflags"(platform, configs, recursive);
-		case "libs":                   return listBuildSetting!"libs"(platform, configs, recursive);
-		case "source-files":           return listBuildSetting!"sourceFiles"(platform, configs, recursive);
-		case "copy-files":             return listBuildSetting!"copyFiles"(platform, configs, recursive);
-		case "versions":               return listBuildSetting!"versions"(platform, configs, recursive);
-		case "debug-versions":         return listBuildSetting!"debugVersions"(platform, configs, recursive);
-		case "import-paths":           return listBuildSetting!"importPaths"(platform, configs, recursive);
-		case "string-import-paths":    return listBuildSetting!"stringImportPaths"(platform, configs, recursive);
-		case "import-files":           return listBuildSetting!"importFiles"(platform, configs, recursive);
-		case "string-import-files":    return listBuildSetting!"stringImportFiles"(platform, configs, recursive);
-		case "pre-generate-commands":  return listBuildSetting!"preGenerateCommands"(platform, configs, recursive);
-		case "post-generate-commands": return listBuildSetting!"postGenerateCommands"(platform, configs, recursive);
-		case "pre-build-commands":     return listBuildSetting!"preBuildCommands"(platform, configs, recursive);
-		case "post-build-commands":    return listBuildSetting!"postBuildCommands"(platform, configs, recursive);
-		case "requirements":           return listBuildSetting!"requirements"(platform, configs, recursive);
-		case "options":                return listBuildSetting!"options"(platform, configs, recursive);
+		case "target-type":            return listBuildSetting!"targetType"(platform, configs, buildSettings);
+		case "target-path":            return listBuildSetting!"targetPath"(platform, configs, buildSettings);
+		case "target-name":            return listBuildSetting!"targetName"(platform, configs, buildSettings);
+		case "working-directory":      return listBuildSetting!"workingDirectory"(platform, configs, buildSettings);
+		case "main-source-file":       return listBuildSetting!"mainSourceFile"(platform, configs, buildSettings);
+		case "dflags":                 return listBuildSetting!"dflags"(platform, configs, buildSettings);
+		case "lflags":                 return listBuildSetting!"lflags"(platform, configs, buildSettings);
+		case "libs":                   return listBuildSetting!"libs"(platform, configs, buildSettings);
+		case "source-files":           return listBuildSetting!"sourceFiles"(platform, configs, buildSettings);
+		case "copy-files":             return listBuildSetting!"copyFiles"(platform, configs, buildSettings);
+		case "versions":               return listBuildSetting!"versions"(platform, configs, buildSettings);
+		case "debug-versions":         return listBuildSetting!"debugVersions"(platform, configs, buildSettings);
+		case "import-paths":           return listBuildSetting!"importPaths"(platform, configs, buildSettings);
+		case "string-import-paths":    return listBuildSetting!"stringImportPaths"(platform, configs, buildSettings);
+		case "import-files":           return listBuildSetting!"importFiles"(platform, configs, buildSettings);
+		case "string-import-files":    return listBuildSetting!"stringImportFiles"(platform, configs, buildSettings);
+		case "pre-generate-commands":  return listBuildSetting!"preGenerateCommands"(platform, configs, buildSettings);
+		case "post-generate-commands": return listBuildSetting!"postGenerateCommands"(platform, configs, buildSettings);
+		case "pre-build-commands":     return listBuildSetting!"preBuildCommands"(platform, configs, buildSettings);
+		case "post-build-commands":    return listBuildSetting!"postBuildCommands"(platform, configs, buildSettings);
+		case "requirements":           return listBuildSetting!"requirements"(platform, configs, buildSettings);
+		case "options":                return listBuildSetting!"options"(platform, configs, buildSettings);
 
 		default:
-			enforce(false, "'"~requestedData~
-				"' is not a valid name for requested data. See 'dub describe --help' for accepted values.");
+			enforce(false, "--data="~requestedData~
+				" is not a valid option. See 'dub describe --help' for accepted --data= values.");
 		}
 		
 		assert(0);
 	}
 
 	/// Outputs requested data for the project, optionally including its dependencies.
-	string[] listBuildSettings(BuildPlatform platform, string config, string[] requestedData)
+	string[] listBuildSettings(BuildPlatform platform, string config, BuildSettings buildSettings, string[] requestedData)
 	{
 		auto configs = getPackageConfigs(platform, config);
+		addBuildSettings(buildSettings, platform, config, null, true);
 		
 		return requestedData
-			.map!(dataName => listBuildSetting(platform, configs, dataName))
+			.map!(dataName => listBuildSetting(platform, configs, buildSettings, dataName))
 			.joiner([""]) // Blank line between each type of requestedData
 			.array();
 	}
 
 	/// Outputs the import paths for the project, including its dependencies.
-	string[] listImportPaths(BuildPlatform platform, string config)
+	string[] listImportPaths(BuildPlatform platform, string config, BuildSettings buildSettings)
 	{
-		return listBuildSetting!"importPaths"(platform, config);
+		addBuildSettings(buildSettings, platform, config, null, true);
+		return listBuildSetting!"importPaths"(platform, config, buildSettings);
 	}
 
 	/// Outputs the string import paths for the project, including its dependencies.
-	string[] listStringImportPaths(BuildPlatform platform, string config)
+	string[] listStringImportPaths(BuildPlatform platform, string config, BuildSettings buildSettings)
 	{
-		return listBuildSetting!"stringImportPaths"(platform, config);
+		addBuildSettings(buildSettings, platform, config, null, true);
+		return listBuildSetting!"stringImportPaths"(platform, config, buildSettings);
 	}
 
 	void saveSelections()
