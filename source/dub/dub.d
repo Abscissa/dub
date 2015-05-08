@@ -422,29 +422,29 @@ class Dub {
 		write(dst.toPrettyString());
 	}
 
-	void listImportPaths(BuildPlatform platform, string config)
+	void listImportPaths(BuildPlatform platform, string config, BuildSettings buildSettings)
 	{
 		import std.stdio;
 
-		foreach(path; m_project.listImportPaths(platform, config)) {
+		foreach(path; m_project.listImportPaths(platform, config, buildSettings)) {
 			writeln(path);
 		}
 	}
 
-	void listStringImportPaths(BuildPlatform platform, string config)
+	void listStringImportPaths(BuildPlatform platform, string config, BuildSettings buildSettings)
 	{
 		import std.stdio;
 
-		foreach(path; m_project.listStringImportPaths(platform, config)) {
+		foreach(path; m_project.listStringImportPaths(platform, config, buildSettings)) {
 			writeln(path);
 		}
 	}
 
-	void listProjectData(BuildPlatform platform, string config, string[] requestedData)
+	void listProjectData(BuildPlatform platform, string config, BuildSettings buildSettings, string[] requestedData)
 	{
 		import std.stdio;
 
-		foreach(data; m_project.listBuildSettings(platform, config, requestedData)) {
+		foreach(data; m_project.listBuildSettings(platform, config, buildSettings, requestedData)) {
 			writeln(data);
 		}
 	}
