@@ -280,7 +280,7 @@ auto bitFieldNames(T)(T value) if(is(T==enum) && isIntegral!T)
 	import std.conv : to;
 	import std.traits : EnumMembers;
 
-     return [ EnumMembers!(T) ]
-         .filter!(member => member==0? value==0 : (value&member)==member)
-         .map!(member => to!string(member));
+	return [ EnumMembers!(T) ]
+		.filter!(member => member==0? value==0 : (value & member) == member)
+		.map!(member => to!string(member));
 }
