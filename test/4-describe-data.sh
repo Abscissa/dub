@@ -70,6 +70,7 @@ echo >> "$expected_file"
 # --data=libs
 echo "ssl" >> "$expected_file"
 echo "curl" >> "$expected_file"
+#echo "$CURR_DIR/describe-dependency-3/libdescribe-dependency-3" >> "$expected_file" # TODO: Currently fails. Don't know why.
 echo >> "$expected_file"
 # --data=source-files
 echo "$CURR_DIR/describe-project/src/dummy.d" >> "$expected_file"
@@ -84,6 +85,7 @@ echo "someVerIdent" >> "$expected_file"
 echo "Have_describe_dependency_1" >> "$expected_file"
 echo "anotherVerIdent" >> "$expected_file"
 echo "Have_describe_dependency_2" >> "$expected_file"
+echo "Have_describe_dependency_3" >> "$expected_file"
 echo >> "$expected_file"
 # --data=debug-versions
 echo "someDebugVerIdent" >> "$expected_file"
@@ -93,10 +95,12 @@ echo >> "$expected_file"
 echo "$CURR_DIR/describe-project/src/" >> "$expected_file"
 echo "$CURR_DIR/describe-dependency-1/source/" >> "$expected_file"
 echo "$CURR_DIR/describe-dependency-2/some-path/" >> "$expected_file"
+echo "$CURR_DIR/describe-dependency-3/dep3-source/" >> "$expected_file"
 echo >> "$expected_file"
 # --data=string-import-paths
 echo "$CURR_DIR/describe-project/views/" >> "$expected_file"
 echo "$CURR_DIR/describe-dependency-2/some-extra-string-import-path/" >> "$expected_file"
+echo "$CURR_DIR/describe-dependency-3/dep3-string-import-path/" >> "$expected_file"
 echo >> "$expected_file"
 # --data=import-files
 echo "$CURR_DIR/describe-dependency-2/some-path/dummy.d" >> "$expected_file"

@@ -27,6 +27,10 @@
         "describe-dependency-2": {
             "version": "1.0",
             "path": "../describe-dependency-2"
+        },
+        "describe-dependency-3": {
+            "version": "1.0",
+            "path": "../describe-dependency-3"
         }
     },
     "configurations": [
