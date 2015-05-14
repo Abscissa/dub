@@ -11,6 +11,7 @@ import dub.compilers.compiler;
 import dub.generators.cmake;
 import dub.generators.build;
 import dub.generators.sublimetext;
+import dub.generators.targetdescription;
 import dub.generators.visuald;
 import dub.internal.vibecompat.core.file;
 import dub.internal.vibecompat.core.log;
@@ -322,6 +323,9 @@ ProjectGenerator createProjectGenerator(string generator_type, Project project)
 		case "cmake":
 			logDebug("Creating CMake generator.");
 			return new CMakeGenerator(project);
+		case "targetdescription":
+			logDebug("Creating target description generator.");
+			return new TargetDescriptionGenerator(project);
 	}
 }
 
