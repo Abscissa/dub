@@ -592,7 +592,6 @@ template findNextUDA(UDA, alias Symbol, long idx, bool allow_types = false)
 				} else enum extract = extract!(index + 1, list[1..$]);
 			} else {
 				static if (is(typeof(list[0]) == UDA)) {
-					import vibe.internal.meta.traits : isPropertyGetter;
 					static if (isPropertyGetter!(list[0])) {
 						enum value = list[0];
 						enum extract = UdaSearchResult!(value)(true, index);

@@ -772,9 +772,16 @@ class DescribeCommand : PackageBuildCommand {
 
 		m_defaultConfig = dub.project.getDefaultConfiguration(m_buildPlatform);
 
-		auto config = m_buildConfig.length ? m_buildConfig : m_defaultConfig;
+		GeneratorSettings settings;
+		settings.platform = m_buildPlatform;
+		settings.config = m_buildConfig.length ? m_buildConfig : m_defaultConfig;
+		settings.buildType = "debug";//m_buildType;
+		settings.buildMode = BuildMode.separate; //m_buildMode;
+		settings.compiler = m_compiler;
+		settings.buildSettings = m_buildSettings;
+		settings.combined = false;
 
-		auto desc = dub.project.describe(m_buildPlatform, config);
+		auto desc = dub.project.describe(settings);
 		writeln(desc.serializeToPrettyJson());
 
 		return 0;

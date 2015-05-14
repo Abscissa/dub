@@ -28,6 +28,8 @@ struct ProjectDescription {
 	string[] platform;
 	PackageDescription[] packages; /// All packages in the dependency tree
 	TargetDescription[] targets; /// Build targets
+	@ignore PackageDescription[string] packageLookup; /// Packages by name
+	@ignore TargetDescription[string] targetLookup; /// Targets by name
 }
 
 

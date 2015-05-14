@@ -19,6 +19,7 @@ import dub.package_;
 import dub.packagemanager;
 import dub.packagesupplier;
 import dub.generators.generator;
+import dub.generators.targetdescription;
 
 
 // todo: cleanup imports.
@@ -563,7 +564,27 @@ class Project {
 	}*/
 
 	/// Outputs a build description of the project, including its dependencies.
-	ProjectDescription describe(BuildPlatform platform, string config)
+	ProjectDescription describe(GeneratorSettings settings)
+	{
+		auto generator = cast(TargetDescriptionGenerator) createProjectGenerator("targetdescription", this);
+		generator.generate(settings);
+		
+		ProjectDescription projDesc;
+		projDesc.rootPackage = this.rootPackage.name;
+		projDesc.configuration = settings.config;
+		projDesc.buildType = settings.buildType;
+		projDesc.compiler = settings.compiler.name;
+		projDesc.architecture = settings.platform.architecture;
+		projDesc.platform = settings.platform.platform;
+		projDesc.targets = generator.targetDescriptions;
+		projDesc.targetLookup = generator.targetDescriptionLookup;
+		projDesc.packages = generator.packageDescriptions;
+		projDesc.packageLookup = generator.packageDescriptionLookup;
+	
+		return projDesc;
+	}
+	/// ditto
+	deprecated ProjectDescription describe(BuildPlatform platform, string config)
 	{
 		ProjectDescription ret;
 		ret.rootPackage = m_rootPackage.name;
@@ -573,8 +594,6 @@ class Project {
 		ret.platform = platform.platform;
 
 		auto configs = getPackageConfigs(platform, config);
-
-		// FIXME: use the generator system to collect the list of actually used build dependencies and source files
 
 		ret.packages ~= m_rootPackage.describe(platform, config);
 
