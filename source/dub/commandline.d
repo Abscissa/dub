@@ -803,12 +803,13 @@ class DescribeCommand : PackageBuildCommand {
 		setupPackage(dub, package_name);
 
 		m_defaultConfig = dub.project.getDefaultConfiguration(m_buildPlatform);
-
+		auto config = m_buildConfig.length ? m_buildConfig : m_defaultConfig;
+		
 		GeneratorSettings settings;
 		settings.platform = m_buildPlatform;
-		settings.config = m_buildConfig.length ? m_buildConfig : m_defaultConfig;
-		settings.buildType = "debug";//m_buildType;
-		settings.buildMode = BuildMode.separate; //m_buildMode;
+		settings.config = config;
+		settings.buildType = m_buildType;
+		settings.buildMode = m_buildMode;
 		settings.compiler = m_compiler;
 		settings.buildSettings = m_buildSettings;
 		settings.combined = false;

@@ -1,6 +1,6 @@
 {
     "name": "describe-project",
-    "targetType": "sourceLibrary",
+    "targetType": "executable",
     "description": "A test describe project",
     "authors": ["nobody"],
     "homepage": "fake.com",
