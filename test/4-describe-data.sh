@@ -110,20 +110,20 @@ echo "$CURR_DIR/describe-project/views/dummy.d" >> "$expected_file"
 #echo "$CURR_DIR/describe-dependency-2/some-extra-string-import-path/dummy.d" >> "$expected_file" # This is missing from result, is that a bug?
 echo >> "$expected_file"
 # --data=pre-generate-commands
-echo "./do-preGenerateCommands" >> "$expected_file"
-echo "./dependency-preGenerateCommands" >> "$expected_file"
+echo "./do-preGenerateCommands.sh" >> "$expected_file"
+echo "../describe-dependency-1/dependency-preGenerateCommands.sh" >> "$expected_file"
 echo >> "$expected_file"
 # --data=post-generate-commands
-echo "./do-postGenerateCommands" >> "$expected_file"
-echo "./dependency-postGenerateCommands" >> "$expected_file"
+echo "./do-postGenerateCommands.sh" >> "$expected_file"
+echo "../describe-dependency-1/dependency-postGenerateCommands.sh" >> "$expected_file"
 echo >> "$expected_file"
 # --data=pre-build-commands
-echo "./do-preBuildCommands" >> "$expected_file"
-echo "./dependency-preBuildCommands" >> "$expected_file"
+echo "./do-preBuildCommands.sh" >> "$expected_file"
+echo "../describe-dependency-1/dependency-preBuildCommands.sh" >> "$expected_file"
 echo >> "$expected_file"
 # --data=post-build-commands
-echo "./do-postBuildCommands" >> "$expected_file"
-echo "./dependency-postBuildCommands" >> "$expected_file"
+echo "./do-postBuildCommands.sh" >> "$expected_file"
+echo "../describe-dependency-1/dependency-postBuildCommands.sh" >> "$expected_file"
 echo >> "$expected_file"
 # --data=requirements
 echo "disallowInlining" >> "$expected_file"

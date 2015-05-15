@@ -439,11 +439,11 @@ class Dub {
 		}
 	}
 
-	void listProjectData(BuildPlatform platform, string config, BuildSettings buildSettings, string[] requestedData)
+	void listProjectData(BuildPlatform platform, string config, string buildType, string[] requestedData)
 	{
 		import std.stdio;
 
-		foreach(data; m_project.listBuildSettings(platform, config, buildSettings, requestedData)) {
+		foreach(data; m_project.listBuildSettings(platform, config, buildType, requestedData)) {
 			writeln(data);
 		}
 	}
