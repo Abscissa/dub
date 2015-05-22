@@ -21,3 +21,5 @@ __dummy.html
 /test/expected-import-path-output
 /test/expected-string-import-path-output
 /test/expected-describe-data-output
+/test/describe-project/dummy.dat
+/test/describe-project/dummy-dep1.dat
