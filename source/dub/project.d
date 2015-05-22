@@ -583,27 +583,18 @@ class Project {
 			ret.packages ~= dep.describe(platform, configs[dep.name]);
 
 		if (build_type.length) {
-//import std.stdio;
-//writeln("// collect build target information (useful for build tools)");
 			// collect build target information (useful for build tools)
 			GeneratorSettings settings;
 			settings.platform = platform;
 			settings.compiler = getCompiler(platform.compilerBinary);
 			settings.config = config;
 			settings.buildType = build_type;
-		//	settings.buildMode = BuildMode.allAtOnce;
-		//	settings.combined = false;
 			auto gen = new TargetDescriptionGenerator(this);
 			try {
 				gen.generate(settings);
 				ret.targets = gen.targetDescriptions;
 				ret.targetLookup = gen.targetDescriptionLookup;
-				//ret.packages = gen.packageDescriptions;
-				//ret.packageLookup = gen.packageDescriptionLookup;
 			} catch (Exception e) {
-//import std.stdio;
-//writeln("Skipping targets description: ", e.msg);
-//writeln("Full error: ", e.toString().sanitize);
 				logDiagnostic("Skipping targets description: %s", e.msg);
 				logDebug("Full error: %s", e.toString().sanitize);
 			}
@@ -630,42 +621,6 @@ class Project {
 		import std.range : only;
 
 		string[] list;
-/+import std.stdio;
-writeln("NUM TARGETS: ", projectDescription.targets.length);
-foreach(t; projectDescription.targets)
-{
-writeln("TARGET: ", t.rootPackage);
-foreach(packName; t.packages)
-{
-writeln("  PACK: ", packName);
-}
-
-}+/
-
-//writeln("NUM PACKS: ", projectDescription.packages.length);
-//foreach(p; projectDescription.packages)
-//writeln("PACK: ", p.name);
-
-		/+auto rootPackageName = projectDescription.rootPackage;
-		//PackageDescription packageDescription = projectDescription.packageLookup[rootPackageName];
-		PackageDescription packageDescription;
-		foreach (pack; projectDescription.packages) {
-		//foreach (target; projectDescription.targets) {
-		//	foreach (pack; target.packages) {
-				if (pack.name == rootPackageName) {
-					packageDescription = pack;
-					break;
-				}
-		//	}
-		}+/
-		/+auto rootPackageName = projectDescription.rootPackage;
-		TargetDescription targetDescription;
-		foreach (target; projectDescription.targets) {
-			if (target.rootPackage == rootPackageName) {
-				targetDescription = target;
-				break;
-			}
-		}+/
 		
 		auto targetDescription = projectDescription.targetLookup[projectDescription.rootPackage];
 		auto buildSettings = targetDescription.buildSettings;
@@ -675,7 +630,7 @@ writeln("  PACK: ", packName);
 		//                   is empty string an actual permitted value instead of
 		//                   a missing value?
 		auto getRawBuildSetting(Package pack, bool allowEmptyString) {
-			auto value = __traits(getMember, /+packageDescription+/buildSettings, attributeName);
+			auto value = __traits(getMember, buildSettings, attributeName);
 			
 			static if( is(typeof(value) == string[]) )
 				return value;
@@ -788,24 +743,21 @@ writeln("  PACK: ", packName);
 	/// Outputs requested data for the project, optionally including its dependencies.
 	string[] listBuildSettings(BuildPlatform platform, string config, string buildType, string[] requestedData)
 	{
-//import std.stdio;
-//writeln("buildType: ", buildType);
 		auto projectDescription = describe(platform, config, buildType);
 		auto configs = getPackageConfigs(platform, config);
-		//addBuildSettings(buildSettings, platform, config, null, true);
 
+		// Include link dependencies
 		auto target = projectDescription.targetLookup[projectDescription.rootPackage];
 		auto bs = target.buildSettings;
 		foreach (ldep; target.linkDependencies) {
-//import std.stdio;
-//writeln("FOUND LINK DEP: ", ldep);
 			auto dbs = projectDescription.targetLookup[ldep].buildSettings;
 			if (bs.targetType != TargetType.staticLibrary) {
-//writeln("      LINK DEP A: ", (Path(dbs.targetPath) ~ getTargetFileName(dbs, platform)).toNativeString());
 				bs.addLibs((Path(dbs.targetPath) ~ getTargetFileName(dbs, platform)).toNativeString());
 			}
 		}
 		target.buildSettings = bs;
+
+		// Update projectDescription.targets
 		projectDescription.targetLookup[projectDescription.rootPackage] = target;
 		foreach (ref t; projectDescription.targets) {
 			if(t.rootPackage == target.rootPackage) {
@@ -823,7 +775,6 @@ writeln("  PACK: ", packName);
 	/// Outputs the import paths for the project, including its dependencies.
 	string[] listImportPaths(BuildPlatform platform, string config, string buildType)
 	{
-		//addBuildSettings(buildSettings, platform, config, null, true);
 		auto projectDescription = describe(platform, config, buildType);
 		return listBuildSetting!"importPaths"(platform, config, projectDescription);
 	}
@@ -831,7 +782,6 @@ writeln("  PACK: ", packName);
 	/// Outputs the string import paths for the project, including its dependencies.
 	string[] listStringImportPaths(BuildPlatform platform, string config, string buildType)
 	{
-		//addBuildSettings(buildSettings, platform, config, null, true);
 		auto projectDescription = describe(platform, config, buildType);
 		return listBuildSetting!"stringImportPaths"(platform, config, projectDescription);
 	}

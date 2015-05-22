@@ -39,9 +39,6 @@ if ! $DUB describe --compiler=$COMPILER \
     die 'Printing project data failed!'
 fi
 
-rm "$CURR_DIR/actual-output"
-cp "$temp_file" "$CURR_DIR/actual-output"
-
 # Create the expected output path file to compare against.
 expected_file="$CURR_DIR/expected-describe-data-output"
 # --data=target-type
