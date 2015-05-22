@@ -591,10 +591,15 @@ class Project {
 			settings.compiler = getCompiler(platform.compilerBinary);
 			settings.config = config;
 			settings.buildType = build_type;
+		//	settings.buildMode = BuildMode.allAtOnce;
+		//	settings.combined = false;
 			auto gen = new TargetDescriptionGenerator(this);
 			try {
 				gen.generate(settings);
 				ret.targets = gen.targetDescriptions;
+				ret.targetLookup = gen.targetDescriptionLookup;
+				//ret.packages = gen.packageDescriptions;
+				//ret.packageLookup = gen.packageDescriptionLookup;
 			} catch (Exception e) {
 //import std.stdio;
 //writeln("Skipping targets description: ", e.msg);
@@ -625,26 +630,52 @@ class Project {
 		import std.range : only;
 
 		string[] list;
-//import std.stdio;
-//writeln("NUM TARGETS: ", projectDescription.targets.length);
-//foreach(t; projectDescription.targets)
-//writeln("TARGET: ", t.rootPackage);
+/+import std.stdio;
+writeln("NUM TARGETS: ", projectDescription.targets.length);
+foreach(t; projectDescription.targets)
+{
+writeln("TARGET: ", t.rootPackage);
+foreach(packName; t.packages)
+{
+writeln("  PACK: ", packName);
+}
 
-		auto rootPackageName = projectDescription.rootPackage;
+}+/
+
+//writeln("NUM PACKS: ", projectDescription.packages.length);
+//foreach(p; projectDescription.packages)
+//writeln("PACK: ", p.name);
+
+		/+auto rootPackageName = projectDescription.rootPackage;
+		//PackageDescription packageDescription = projectDescription.packageLookup[rootPackageName];
 		PackageDescription packageDescription;
 		foreach (pack; projectDescription.packages) {
-			if (pack.name == rootPackageName) {
-				packageDescription = pack;
+		//foreach (target; projectDescription.targets) {
+		//	foreach (pack; target.packages) {
+				if (pack.name == rootPackageName) {
+					packageDescription = pack;
+					break;
+				}
+		//	}
+		}+/
+		/+auto rootPackageName = projectDescription.rootPackage;
+		TargetDescription targetDescription;
+		foreach (target; projectDescription.targets) {
+			if (target.rootPackage == rootPackageName) {
+				targetDescription = target;
 				break;
 			}
-		}
+		}+/
+		
+		auto targetDescription = projectDescription.targetLookup[projectDescription.rootPackage];
+		auto buildSettings = targetDescription.buildSettings;
 		
 		// Return any BuildSetting member attributeName as a range of strings. Don't attempt to fixup values.
 		// allowEmptyString: When the value is a string (as opposed to string[]),
 		//                   is empty string an actual permitted value instead of
 		//                   a missing value?
 		auto getRawBuildSetting(Package pack, bool allowEmptyString) {
-			auto value = __traits(getMember, packageDescription, attributeName);
+			auto value = __traits(getMember, /+packageDescription+/buildSettings, attributeName);
 			
 			static if( is(typeof(value) == string[]) )
 				return value;
@@ -731,20 +762,20 @@ class Project {
 		case "dflags":                 return listBuildSetting!"dflags"(platform, configs, projectDescription);
 		case "lflags":                 return listBuildSetting!"lflags"(platform, configs, projectDescription);
 		case "libs":                   return listBuildSetting!"libs"(platform, configs, projectDescription);
-		case "source-files":           return ["{not yet supported}"];//return listBuildSetting!"sourceFiles"(platform, configs, projectDescription);
+		case "source-files":           return listBuildSetting!"sourceFiles"(platform, configs, projectDescription);
 		case "copy-files":             return listBuildSetting!"copyFiles"(platform, configs, projectDescription);
 		case "versions":               return listBuildSetting!"versions"(platform, configs, projectDescription);
 		case "debug-versions":         return listBuildSetting!"debugVersions"(platform, configs, projectDescription);
 		case "import-paths":           return listBuildSetting!"importPaths"(platform, configs, projectDescription);
 		case "string-import-paths":    return listBuildSetting!"stringImportPaths"(platform, configs, projectDescription);
-		case "import-files":           return ["{not yet supported}"];//return listBuildSetting!"importFiles"(platform, configs, projectDescription);
-		case "string-import-files":    return ["{not yet supported}"];//return listBuildSetting!"stringImportFiles"(platform, configs, projectDescription);
+		case "import-files":           return listBuildSetting!"importFiles"(platform, configs, projectDescription);
+		case "string-import-files":    return listBuildSetting!"stringImportFiles"(platform, configs, projectDescription);
 		case "pre-generate-commands":  return listBuildSetting!"preGenerateCommands"(platform, configs, projectDescription);
 		case "post-generate-commands": return listBuildSetting!"postGenerateCommands"(platform, configs, projectDescription);
 		case "pre-build-commands":     return listBuildSetting!"preBuildCommands"(platform, configs, projectDescription);
 		case "post-build-commands":    return listBuildSetting!"postBuildCommands"(platform, configs, projectDescription);
-		case "requirements":           return ["{not yet supported}"];//return listBuildSetting!"requirements"(platform, configs, projectDescription);
-		case "options":                return ["{not yet supported}"];//return listBuildSetting!"options"(platform, configs, projectDescription);
+		case "requirements":           return listBuildSetting!"requirements"(platform, configs, projectDescription);
+		case "options":                return listBuildSetting!"options"(platform, configs, projectDescription);
 
 		default:
 			enforce(false, "--data="~requestedData~
@@ -757,12 +788,32 @@ class Project {
 	/// Outputs requested data for the project, optionally including its dependencies.
 	string[] listBuildSettings(BuildPlatform platform, string config, string buildType, string[] requestedData)
 	{
-import std.stdio;
-writeln("buildType: ", buildType);
+//import std.stdio;
+//writeln("buildType: ", buildType);
 		auto projectDescription = describe(platform, config, buildType);
 		auto configs = getPackageConfigs(platform, config);
 		//addBuildSettings(buildSettings, platform, config, null, true);
-		
+
+		auto target = projectDescription.targetLookup[projectDescription.rootPackage];
+		auto bs = target.buildSettings;
+		foreach (ldep; target.linkDependencies) {
+//import std.stdio;
+//writeln("FOUND LINK DEP: ", ldep);
+			auto dbs = projectDescription.targetLookup[ldep].buildSettings;
+			if (bs.targetType != TargetType.staticLibrary) {
+//writeln("      LINK DEP A: ", (Path(dbs.targetPath) ~ getTargetFileName(dbs, platform)).toNativeString());
+				bs.addLibs((Path(dbs.targetPath) ~ getTargetFileName(dbs, platform)).toNativeString());
+			}
+		}
+		target.buildSettings = bs;
+		projectDescription.targetLookup[projectDescription.rootPackage] = target;
+		foreach (ref t; projectDescription.targets) {
+			if(t.rootPackage == target.rootPackage) {
+				t = target;
+				break;
+			}
+		}
+
 		return requestedData
 			.map!(dataName => listBuildSetting(platform, configs, projectDescription, dataName))
 			.joiner([""]) // Blank line between each type of requestedData
@@ -770,17 +821,19 @@ writeln("buildType: ", buildType);
 	}
 
 	/// Outputs the import paths for the project, including its dependencies.
-	string[] listImportPaths(BuildPlatform platform, string config, BuildSettings buildSettings)
+	string[] listImportPaths(BuildPlatform platform, string config, string buildType)
 	{
 		//addBuildSettings(buildSettings, platform, config, null, true);
-		return ["{not yet supported}"];//return listBuildSetting!"importPaths"(platform, config, buildSettings);
+		auto projectDescription = describe(platform, config, buildType);
+		return listBuildSetting!"importPaths"(platform, config, projectDescription);
 	}
 
 	/// Outputs the string import paths for the project, including its dependencies.
-	string[] listStringImportPaths(BuildPlatform platform, string config, BuildSettings buildSettings)
+	string[] listStringImportPaths(BuildPlatform platform, string config, string buildType)
 	{
 		//addBuildSettings(buildSettings, platform, config, null, true);
-		return ["{not yet supported}"];//return listBuildSetting!"stringImportPaths"(platform, config, buildSettings);
+		auto projectDescription = describe(platform, config, buildType);
+		return listBuildSetting!"stringImportPaths"(platform, config, projectDescription);
 	}
 
 	void saveSelections()

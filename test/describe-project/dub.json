@@ -17,7 +17,7 @@
     "postGenerateCommands": ["./do-postGenerateCommands.sh"],
     "preBuildCommands": ["./do-preBuildCommands.sh"],
     "postBuildCommands": ["./do-postBuildCommands.sh"],
-    "buildRequirements": ["disallowInlining"],
+    "buildRequirements": ["allowWarnings", "disallowInlining"],
     "buildOptions": ["releaseMode", "debugInfo"],
     "dependencies": {
         "describe-dependency-1": {

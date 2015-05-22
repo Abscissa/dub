@@ -9,4 +9,5 @@
     "importPaths": ["dep3-source"],
     "sourcePaths": ["dep3-source"],
     "stringImportPaths": ["dep3-string-import-path"],
+    "buildOptions": ["profile"]
 }

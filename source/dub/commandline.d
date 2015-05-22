@@ -829,9 +829,9 @@ class DescribeCommand : PackageBuildCommand {
 		auto config = m_buildConfig.length ? m_buildConfig : m_defaultConfig;
 
 		if (m_importPaths) {
-			dub.listImportPaths(m_buildPlatform, config, m_buildSettings);
+			dub.listImportPaths(m_buildPlatform, config, m_buildType);
 		} else if (m_stringImportPaths) {
-			dub.listStringImportPaths(m_buildPlatform, config, m_buildSettings);
+			dub.listStringImportPaths(m_buildPlatform, config, m_buildType);
 		} else if (m_data) {
 			dub.listProjectData(m_buildPlatform, config, m_buildType, m_data);
 		} else {
